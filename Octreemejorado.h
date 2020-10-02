@@ -26,10 +26,10 @@ vector<Punto> puntos_obj;
 
 int size=0;
 Cubo* space;
-
 int xd=0;
-class Punto{
-public:
+
+
+struct Punto{
 	GLfloat x,y,z;
 	Punto(double n_x=0,double n_y=0,double n_z=0){
 		x=n_x;
@@ -44,12 +44,95 @@ public:
 		this->y=t1.y;
 		this->z=t1.z;
 	}
+	void set_pos(double tx=0,double ty=0,double tz=0){
+		x=tx;
+		y=ty;
+		z=tz;
+	}
 };
+/////////////////////////////////////////////////////////
+struct Cube{
+	Punto *p[2];
+	Punto colores[4];
+	Cube(Punto &A,Punto &B){// a->menor b->mayor
+		p[0]=&A;
+		p[1]=&B;
+		
+		colores[0].set_pos(1,0,0);
+		colores[1].set_pos(0,1,0);
+		colores[3].set_pos(0,0,1);
+		colores[2].set_pos(255,105,180);
+	}
+	Cube(){
+		colores[0].set_pos(1,0,0);
+		colores[1].set_pos(0,1,0);
+		colores[3].set_pos(0,0,1);
+		colores[2].set_pos(255,105,180);
+	}
+	void set_puntos(Punto &A,Punto &B){
+		p[0]=&A;
+		p[1]=&B;
+	}	
+		
+	void dibujar(void){
+		double dif=p[1]->x-p[0]->x;
+		Punto arr_p[4];
+		arr_p[0]=*p[0];arr_p[2]=*p[0];
+		arr_p[1]=*p[0];arr_p[3]=*p[0];
+		arr_p[1].x+=dif;
+		arr_p[2].x+=dif;
+		arr_p[2].y+=dif;
+		arr_p[3].y+=dif;
+		
+		///tapa y base
+		
+		for(int w=0;w<2;++w){
+			glBegin(GL_POLYGON);
+			for(int i=0;i<4;++i){
+				glVertex3d(arr_p[i].x,arr_p[i].y,p[w]->z);
+				glColor3f(colores[i].x,colores[i].y,colores[i].z);
+			}
+			glEnd();
+		}
+		///lados
+		for(int i=0;i<3;++i){
+			glBegin(GL_POLYGON);
+			glVertex3d(arr_p[i].x,arr_p[i].y,p[0]->z);
+			glColor3f(colores[0].x,colores[0].y,colores[0].z);
+			glVertex3d(arr_p[i+1].x,arr_p[i+1].y,p[0]->z);
+			glColor3f(colores[1].x,colores[1].y,colores[1].z);
+			glVertex3d(arr_p[i+1].x,arr_p[i+1].y,p[1]->z);
+			glColor3f(colores[2].x,colores[2].y,colores[2].z);
+			glVertex3d(arr_p[i].x,arr_p[i].y,p[1]->z);
+			glColor3f(colores[3].x,colores[3].y,colores[3].z);
+			glEnd();
+		}
+		
+		glBegin(GL_POLYGON);
+		glVertex3d(arr_p[3].x,arr_p[3].y,p[0]->z);
+		glColor3f(colores[0].x,colores[0].y,colores[0].z);
+		glVertex3d(arr_p[0].x,arr_p[0].y,p[0]->z);
+		glColor3f(colores[1].x,colores[1].y,colores[1].z);
+		glVertex3d(arr_p[0].x,arr_p[0].y,p[1]->z);
+		glColor3f(colores[2].x,colores[2].y,colores[2].z);
+		glVertex3d(arr_p[3].x,arr_p[3].y,p[1]->z);
+		glColor3f(colores[3].x,colores[3].y,colores[3].z);
+		glEnd();
+		
+		glutSwapBuffers();
+	}
+};
+
+
+
+
+
 ///////////////////////////////////////////////
 class Cubo{
 public:
 	Punto *mat_pun[2];//minimo,maximo
 	Cubo *hijos [8];
+	Cube cubo_pintar;
 	vector<Punto> puntos;
 	double val_volumen,val_area,lado;
 	int puntos_necesarios=0;
@@ -60,6 +143,8 @@ public:
 		
 		mat_pun[0]=new Punto(A.x,A.y,A.z);
 		mat_pun[1]=new Punto(B.x,B.y,B.z);
+		
+		cubo_pintar.set_puntos(A,B);
 		///
 		double v= calcular_volumen();
 		double a= calcular_area();
@@ -68,8 +153,8 @@ public:
 		puntos_necesarios=cant_nece_dots_2;
 //		mat_pun[0]->imprimir();
 //		mat_pun[1]->imprimir();
-		cout<<"//////////////////////////////\n";
-////		imprimir();
+//		cout<<"//////////////////////////////\n";
+//		imprimir();
 //		cout<<"necesita "<<puntos_necesarios<<" y tengo "<<puntos.size()<<endl;
 		porcent=por;
 		for(int i=0;i<8;++i){
@@ -90,7 +175,7 @@ public:
 //			t.imprimir();
 			num_dots++;
 			xd++;
-			cout<<"xd "<<xd<<endl;
+
 			puntos.push_back(t);
 			if(puntos.size()>=puntos_necesarios)
 				lleno=true;
@@ -189,6 +274,17 @@ public:
 		}
 		return true;
 	}
+	void Pintar(){
+		if(puntos.size()>0 && verificar_part()){
+			cubo_pintar.dibujar();
+			return;
+		}
+		else{
+			for(int i=0;i<8;++i){
+				hijos[i]->Pintar();
+			}
+		}
+	}
 };
 ///////////////////////////////////////////////
 void Generar_espacio(string nombre_archivo,int por){
@@ -264,7 +360,9 @@ public:
 		Cubo *p=root;
 		p->insertar(t);
 	}
-	
+	void dibujar(){
+		root->Pintar();
+	}
 };
 #endif
 
