@@ -16,7 +16,8 @@
 using namespace std;
 
 double cam_x=0,cam_y=0,zoom=0;
-New_octree n("gato.obj",30);
+New_octree * punt_arb;
+
 
 /////////////////////////////////////////////////////////
 struct Centro{
@@ -49,31 +50,34 @@ void displayCoord(){
 		Punto p2(30,30,30);
 		Cube dc(p1,p2);
 		
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		/*glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);*/
 		/// Cargar puntos
-		glColor3f(255,0,0);
-		glPointSize(5);
-		glBegin(GL_POINTS);
-		for(int i=0;i<size;i++)
-			glVertex3d(puntos_obj[i].x,puntos_obj[i].y,puntos_obj[i].z);
-		glEnd();
-		glutSwapBuffers();
+//		glColor3f(255,0,0);
+//		glPointSize(5);
+//		glBegin(GL_POINTS);
+//		for(int i=0;i<size;i++)
+//			glVertex3d(puntos_obj[i].x,puntos_obj[i].y,puntos_obj[i].z);
+//		glEnd();
+//		glutSwapBuffers();
 		///Cargar cubos
-		n.dibujar();
+		for(int i=0;i<size_cubos;i++){
+			cubos_para_pintar[i]->dibujar();
+		}
 		///
 		displayCoord();
 		centroide.dibujar();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 	/////////////////////////////////////////////////////////
 	void specialKeys( int key, int x, int y ) {
 		if (key == GLUT_KEY_RIGHT)
-			cam_y -= 2;
+			cam_y -= 3;
 		else if (key == GLUT_KEY_LEFT)
-			cam_y += 2;
+			cam_y += 3;
 		else if (key == GLUT_KEY_UP)
-			cam_x += 2;
+			cam_x += 3;
 		else if (key == GLUT_KEY_DOWN)
-			cam_x -= 2;
+			cam_x -= 3;
 		glutPostRedisplay();
 	}
 	/////////////////////////////////////////////////////////
@@ -97,17 +101,17 @@ void displayCoord(){
 	/////////////////////////////////////////////////////////
 	int main (int argc, char **argv) {
 		puntos_obj.resize(MAX);
-		
+		New_octree n("gato.obj",10);
 		
 		for(int i=0;i<size;i++){
 			n.insertar(puntos_obj[i]);
 		}
-		/*Punto t1(5.0007,1.0268,-14.4955);*/
-//		Punto t2(2,2,2);
-		/*n.insertar(t1);*/
+//		Punto t1(5.0007,1.0268,-14.4955);
+//		Punto t2(5,5,5);
+//		n.insertar(t2);
 //		cout<<"///////////////////////////"<<endl;
 //		n.insertar(t2);
-		
+		n.dibujar();
 		///////////////////////////////////////////////////////
 		glutInit (&argc, argv);
 		glutInitDisplayMode (GLUT_SINGLE|GLUT_RGB|GLUT_DEPTH);

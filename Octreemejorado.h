@@ -21,14 +21,14 @@
 using namespace std;
 class Punto;
 class Cubo;
-
+class Cube;
 vector<Punto> puntos_obj;
-
+Cube* cubos_para_pintar[MAX];
 int size=0;
 Cubo* space;
-int xd=0;
+int size_cubos=0;
 
-
+//////
 struct Punto{
 	GLfloat x,y,z;
 	Punto(double n_x=0,double n_y=0,double n_z=0){
@@ -70,10 +70,9 @@ struct Cube{
 		colores[2].set_pos(255,105,180);
 	}
 	void set_puntos(Punto &A,Punto &B){
-		p[0]=&A;
-		p[1]=&B;
+		p[0]=new Punto(A.x,A.y,A.z);
+		p[1]=new Punto(B.x,B.y,B.z);
 	}	
-		
 	void dibujar(void){
 		double dif=p[1]->x-p[0]->x;
 		Punto arr_p[4];
@@ -120,6 +119,15 @@ struct Cube{
 		glEnd();
 		
 		glutSwapBuffers();
+	}
+	bool operator==(Cube t){
+		if((this->p[0]->x != t.p[0]->x) || (this->p[0]->y != t.p[0]->y) || (this->p[0]->z != t.p[0]->z)){
+			return false;
+		}
+		if((this->p[1]->x != t.p[1]->x) || (this->p[1]->y != t.p[1]->y) || (this->p[1]->z != t.p[1]->z)){
+			return false;
+		}
+		return true;	
 	}
 };
 
@@ -168,17 +176,22 @@ public:
 			return false;
 		}
 		/*cout<<"puntos size "<<num_dots<<" >= "<<puntos_necesarios<<endl;*/
-		if(puntos.size()+1>=puntos_necesarios){///Si es una hoja y si esta dentro del limite
+		if(puntos.size()+1>=puntos_necesarios){///Si cumple con el area
 //			mat_pun[0]->imprimir();
 //			mat_pun[1]->imprimir();
 //			/*cout<<"xd "<<xd<<endl;*/
 //			t.imprimir();
 			num_dots++;
-			xd++;
-
 			puntos.push_back(t);
-			if(puntos.size()>=puntos_necesarios)
+			if(puntos.size()>=puntos_necesarios){
 				lleno=true;
+//				cubo_pintar.p[0]->imprimir();
+//				cubo_pintar.p[1]->imprimir();	
+//				cubos_para_pintar[size_cubos]=&cubo_pintar;
+//				size_cubos++;
+				
+			}
+				
 			return true;
 		}
 		else if(puntos_necesarios>0 && verificar_part()){///si no tiene hijos y no es nulo(hoja)
@@ -205,12 +218,21 @@ public:
 			hijos[7]=new Cubo(Punto(t1.x+d,t1.y+d,t1.z+d),//+x +y +z 
 							  Punto(t2.x,t2.y,t2.z),porcent );// -
 		}
-		if(!verificar_part() && puntos_necesarios>0 ){//si tiene hijos y no es nulo(rama)
+		if(!verificar_part() && puntos_necesarios>0 ){///si tiene hijos y no es nulo(rama)
 			//cout<<"3"<<endl;
 			for(int i=0;i<8;++i){
 				/*	cout<<"voy al hijo "<<i+1<<endl;*/
 				if(hijos[i]->insertar(t)==true){
-					comprobar();
+					if(comprobar()){///comprobar si sus hijos estan llenos
+						for(int i=0;i<8;++i){
+							for(int w=0;w<hijos[i]->puntos.size();++w){
+								this->puntos.push_back(hijos[i]->puntos[w]);
+							}
+							delete hijos[i];
+							hijos[i]=nullptr;
+							lleno=true;
+						}
+					}
 					break;
 				}
 			}
@@ -274,16 +296,26 @@ public:
 		}
 		return true;
 	}
-	void Pintar(){
-		if(puntos.size()>0 && verificar_part()){
-			cubo_pintar.dibujar();
+	void cargar_para_pintar(){
+		
+		if(verificar_part()){///si es hoja
+			if(lleno==true){
+				cubos_para_pintar[size_cubos]=&cubo_pintar;
+				size_cubos++;
+			}
 			return;
 		}
-		else{
-			for(int i=0;i<8;++i){
-				hijos[i]->Pintar();
+		if(lleno==true){
+			cubos_para_pintar[size_cubos]=&cubo_pintar;
+			size_cubos++;
+			return;
+		}
+		for(int i=0;i<8;++i){
+			if(hijos[i]!=nullptr){
+				hijos[i]->cargar_para_pintar();
 			}
 		}
+		
 	}
 };
 ///////////////////////////////////////////////
@@ -361,7 +393,7 @@ public:
 		p->insertar(t);
 	}
 	void dibujar(){
-		root->Pintar();
+		root->cargar_para_pintar();
 	}
 };
 #endif
