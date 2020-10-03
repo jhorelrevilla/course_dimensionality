@@ -224,6 +224,7 @@ public:
 				/*	cout<<"voy al hijo "<<i+1<<endl;*/
 				if(hijos[i]->insertar(t)==true){
 					if(comprobar()){///comprobar si sus hijos estan llenos
+						cout<<"padre reemplaza hijos"<<endl;
 						for(int i=0;i<8;++i){
 							for(int w=0;w<hijos[i]->puntos.size();++w){
 								this->puntos.push_back(hijos[i]->puntos[w]);
