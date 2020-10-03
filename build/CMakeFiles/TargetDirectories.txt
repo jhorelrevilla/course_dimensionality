@@ -1,0 +1,4 @@
+/home/mafflu-koofy/Documents/GitHub/course_dimensionality/build/CMakeFiles/rebuild_cache.dir
+/home/mafflu-koofy/Documents/GitHub/course_dimensionality/build/CMakeFiles/edit_cache.dir
+/home/mafflu-koofy/Documents/GitHub/course_dimensionality/build/CMakeFiles/openglbinaries.dir
+/home/mafflu-koofy/Documents/GitHub/course_dimensionality/build/CMakeFiles/Octree.dir
